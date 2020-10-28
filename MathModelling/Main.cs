@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -13,41 +12,46 @@ namespace MM
 {
     public partial class Main : Form
     {
+        private readonly object _lockGate = new object();
         private readonly Dictionary<string, BaseMethod> _methodMap;
         private readonly Dictionary<string, FlowLayoutPanel> _panelMap;
-        private bool _requireRedraw;
-        private Timer redrawTimer;
-        private Timer liveTimer;
-        private BaseMethod _currentMethod;
         private FieldInfo _currentField;
-        private readonly object _lockGate = new object();
         private NumericUpDown _currentFieldUI;
+        private BaseMethod _currentMethod;
+        private int _currentTimeLayer;
+        private Form _preview;
+        private bool _requireRedraw;
         private SeriesChartType _seriesType = SeriesChartType.Line;
+        private Timer liveTimer;
+        private Timer redrawTimer;
+        private double[][] result2d;
+
+        private double[][][] result3d;
 
         public Main()
         {
             InitializeComponent();
             _panelMap = new Dictionary<string, FlowLayoutPanel>();
-            var methods = Assembly.GetExecutingAssembly().GetTypes().Where(x => x.BaseType == typeof(BaseMethod));
-            _methodMap = methods.Select(x => new { x.Name, Value = (BaseMethod)Activator.CreateInstance(x) })
+            var methods = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.BaseType == typeof(BaseMethod));
+            _methodMap = methods.Select(x => new
+                    {x.Name, Value = (BaseMethod) Activator.CreateInstance(x)})
                 .OrderByDescending(c => c.Value.Priority)
                 .ToDictionary(x => x.Name, x => x.Value);
         }
 
         private void Main_Load(object sender, EventArgs e)
         {
-            foreach (var method in _methodMap)
-            {
-                MapProperties(method);
-            }
+            foreach (var method in _methodMap) MapProperties(method);
 
-            var sct = new[] { SeriesChartType.Line, SeriesChartType.Spline };
+            var sct = new[] {SeriesChartType.Line, SeriesChartType.Spline};
             comboBox3.DataSource = sct;
             comboBox3.SelectedIndex = 0;
             comboBox3.SelectedIndexChanged += ChartTypeChanged;
             comboBox1.DataSource = _methodMap.Select(x => x.Key).ToArray();
-            timeLayerValues.SelectedIndexChanged += TimeLayerValues_SelectedIndexChanged;
-            redrawTimer = new Timer { Interval = 500 };
+            timeLayerValues.SelectedIndexChanged +=
+                TimeLayerValues_SelectedIndexChanged;
+            redrawTimer = new Timer {Interval = 500};
             redrawTimer.Tick += (s, _) =>
             {
                 if (!_requireRedraw) return;
@@ -56,7 +60,7 @@ namespace MM
                 redrawTimer.Stop();
             };
             redrawTimer.Start();
-            liveTimer = new Timer { Interval = 100 };
+            liveTimer = new Timer {Interval = 100};
             liveTimer.Tick += (s, _) =>
             {
                 if (liveCheck.Checked)
@@ -69,13 +73,15 @@ namespace MM
             liveTimer.Start();
         }
 
-        private void TimeLayerValues_SelectedIndexChanged(object sender, EventArgs e)
+        private void TimeLayerValues_SelectedIndexChanged(object sender,
+            EventArgs e)
         {
             if (sender is ComboBox cb)
             {
                 if (cb.SelectedIndex == -1) return;
                 _currentTimeLayer = cb.SelectedIndex;
-                VisualizeAs2D(_currentMethod, result3d[result3d.Length - 1 - _currentTimeLayer]);
+                VisualizeAs2D(_currentMethod,
+                    result3d[result3d.Length - 1 - _currentTimeLayer]);
             }
         }
 
@@ -84,7 +90,7 @@ namespace MM
             if (!(sender is ComboBox s)) return;
             if (s.SelectedIndex == -1) return;
 
-            _seriesType = (SeriesChartType)s.SelectedItem;
+            _seriesType = (SeriesChartType) s.SelectedItem;
             _requireRedraw = true;
             redrawTimer.Start();
         }
@@ -99,21 +105,21 @@ namespace MM
                 Dock = DockStyle.Fill
             };
             panel.VerticalScroll.Enabled = true;
-            var t = method.Value.GetType();
+            Type t = method.Value.GetType();
 
             var fds = t.GetFields().Where(x =>
-                x.GetCustomAttributes<ReflectedUICoefsAttribute>().Any()).ToArray();
-            foreach (var field in fds)
+                    x.GetCustomAttributes<ReflectedUICoefsAttribute>().Any())
+                .ToArray();
+            foreach (FieldInfo field in fds)
             {
-                var ruic = field.GetCustomAttribute<ReflectedUICoefsAttribute>();
+                var ruic =
+                    field.GetCustomAttribute<ReflectedUICoefsAttribute>();
                 var prec = ruic.P;
                 var c = new FlowLayoutPanel();
-                var lb = new Label { Text = field.Name.Trim('_') };
+                var lb = new Label {Text = field.Name.Trim('_')};
                 var upDown = new NumericUpDown();
-                if (field.Name.Contains("tau"))
-                {
-                    upDown.Name = "upDowntau";
-                }
+                if (field.Name.Contains("tau")) upDown.Name = "upDowntau";
+
                 // 
                 // label2
                 // 
@@ -129,7 +135,7 @@ namespace MM
                 if (field.FieldType != typeof(int))
                 {
                     upDown.DecimalPlaces = prec;
-                    upDown.Increment = 1m / (decimal)Math.Pow(10, prec);
+                    upDown.Increment = 1m / (decimal) Math.Pow(10, prec);
                 }
                 else
                 {
@@ -151,11 +157,11 @@ namespace MM
                 {
                     try
                     {
-                        field.SetValue(method.Value, Convert.ChangeType(upDown.Text, field.FieldType));
+                        field.SetValue(method.Value,
+                            Convert.ChangeType(upDown.Text, field.FieldType));
                         if (field.Name.Contains("time"))
-                        {
                             ResetTimelayerControl(true);
-                        }
+
                         _requireRedraw = true;
                         redrawTimer?.Start();
                     }
@@ -164,10 +170,7 @@ namespace MM
                         // ignored
                     }
                 };
-                if (lb.Text.Equals("tau"))
-                {
-                    _currentFieldUI = upDown;
-                }
+                if (lb.Text.Equals("tau")) _currentFieldUI = upDown;
             }
 
             trackBar1.ValueChanged += OnTrackChange;
@@ -178,7 +181,8 @@ namespace MM
         {
             if (_currentField == default) return;
             FieldInfo field = _currentField;
-            field.SetValue(_currentMethod, Convert.ChangeType(trackBar1.Value, field.FieldType));
+            field.SetValue(_currentMethod,
+                Convert.ChangeType(trackBar1.Value, field.FieldType));
             _currentFieldUI.Value = trackBar1.Value;
             _currentFieldUI.Refresh();
             _requireRedraw = true;
@@ -191,14 +195,16 @@ namespace MM
             trackBarCurLab.Text = val;
             trackBar1.Minimum = 1;
             trackBar1.Maximum = 200;
-            trackBar1.Value = (int)Convert.ChangeType(fieldInfo.GetValue(method), TypeCode.Int32);
+            trackBar1.Value =
+                (int) Convert.ChangeType(fieldInfo.GetValue(method),
+                    TypeCode.Int32);
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBox1.SelectedIndex < 0) return;
             DoRedraw();
-            var sel = (string)comboBox1.SelectedItem;
+            var sel = (string) comboBox1.SelectedItem;
             panel3.Controls.Clear();
             panel3.Controls.Add(_panelMap[sel]);
         }
@@ -208,11 +214,15 @@ namespace MM
             if (comboBox1.SelectedIndex < 0) return;
             try
             {
-                var sel = (string)comboBox1.SelectedItem;
+                var sel = (string) comboBox1.SelectedItem;
 
-                _currentFieldUI = _panelMap[sel].Controls.Find("upDowntau", true).FirstOrDefault() as NumericUpDown;
+                _currentFieldUI =
+                    _panelMap[sel].Controls.Find("upDowntau", true)
+                        .FirstOrDefault() as NumericUpDown;
                 lock (_lockGate)
+                {
                     MethodAction(_methodMap[sel]);
+                }
             }
             catch
             {
@@ -226,23 +236,31 @@ namespace MM
 
             timeLayerBox.Visible = method.Is3D;
             _currentMethod = method;
-            var t = method.GetType();
+            Type t = method.GetType();
             var fds = t.GetFields().Where(x =>
-                x.GetCustomAttributes<ReflectedUICoefsAttribute>().Any()).ToList();
-            _currentField = fds.FirstOrDefault(x => x.GetCustomAttributes<DefaultModAttribute>().Any()) ??
-                                                     fds.FirstOrDefault(x => x.Name.Contains("tau"));
+                    x.GetCustomAttributes<ReflectedUICoefsAttribute>().Any())
+                .ToList();
+            _currentField = fds.FirstOrDefault(x =>
+                                x.GetCustomAttributes<DefaultModAttribute>()
+                                    .Any()) ??
+                            fds.FirstOrDefault(x => x.Name.Contains("tau"));
             if (_currentField != default)
                 SelectForChange(_currentField, _currentMethod);
 
             var msCalc = method.GetType().GetMethods()
-                .Where(x => x.GetCustomAttributes<ReflectedTargetAttribute>().Any()).ToArray();
+                .Where(x =>
+                    x.GetCustomAttributes<ReflectedTargetAttribute>().Any())
+                .ToArray();
             if (method.SwitchData == default && msCalc.Any())
             {
                 var ms = msCalc
-                    .Select(x => x.Name.StartsWith("Get") ? x.Name.Substring(3) : x.Name).ToArray();
+                    .Select(x =>
+                        x.Name.StartsWith("Get") ? x.Name.Substring(3) : x.Name)
+                    .ToArray();
                 method.SwitchData = ms;
                 method.SwitchItem = ms[0];
             }
+
             if (method.SwitchData != default)
             {
                 panel5.Visible = true;
@@ -266,32 +284,20 @@ namespace MM
             result2d = default;
             result3d = default;
             if (method.Is3D)
-            {
                 BindChart3D(msCalc, method);
-            }
             else
-            {
                 BindChart2D(msCalc, method);
-            }
         }
-
-        double[][][] result3d;
-        double[][] result2d;
-        private Form _preview;
-        private int _currentTimeLayer;
 
 
         private void BindChart3D(MethodInfo[] msCalc, BaseMethod method)
         {
             if (msCalc.Any())
-            {
-                result3d = (double[][][])msCalc.First(x => x.Name.Contains(method.SwitchItem))
+                result3d = (double[][][]) msCalc
+                    .First(x => x.Name.Contains(method.SwitchItem))
                     .Invoke(method, Array.Empty<object>());
-            }
             else
-            {
                 result3d = method.Calculate3D();
-            }
 
             ResetTimelayerControl();
 
@@ -303,11 +309,14 @@ namespace MM
             if (timeLayerValues.DataSource == default || force)
             {
                 if (!_currentMethod.Is3D) return;
-                timeLayerValues.SelectedIndexChanged -= TimeLayerValues_SelectedIndexChanged;
-                timeLayerValues.DataSource = Enumerable.Range(1, result3d.Length)
+                timeLayerValues.SelectedIndexChanged -=
+                    TimeLayerValues_SelectedIndexChanged;
+                timeLayerValues.DataSource = Enumerable
+                    .Range(1, result3d.Length)
                     .Select(x => "t" + _currentMethod.StepTime * x)
                     .ToArray();
-                timeLayerValues.SelectedIndexChanged += TimeLayerValues_SelectedIndexChanged;
+                timeLayerValues.SelectedIndexChanged +=
+                    TimeLayerValues_SelectedIndexChanged;
             }
         }
 
@@ -325,20 +334,18 @@ namespace MM
                 sb.AppendLine(method.AsString(layer.Reverse().ToArray()));
                 sb.AppendLine();
             }
+
             return sb.ToString();
         }
 
         private void BindChart2D(MethodInfo[] msCalc, BaseMethod method)
         {
             if (msCalc.Any())
-            {
-                result2d = (double[][])msCalc.First(x => x.Name.Contains(method.SwitchItem))
+                result2d = (double[][]) msCalc
+                    .First(x => x.Name.Contains(method.SwitchItem))
                     .Invoke(method, Array.Empty<object>());
-            }
             else
-            {
                 result2d = method.Calculate();
-            }
 
             VisualizeAs2D(method, result2d);
         }
@@ -347,7 +354,7 @@ namespace MM
         {
             var xv = Enumerable.Range(0, result[0].Length)
                 .Select(x => x * method.ChartStepX).ToArray();
-            int n = 0;
+            var n = 0;
 
             chart1.Series.Clear();
             chart1.Series.SuspendUpdates();
@@ -360,30 +367,23 @@ namespace MM
                     ChartType = _seriesType,
                     BorderWidth = 3,
                     BackImageTransparentColor = Color.WhiteSmoke,
-                    MarkerColor = Color.Blue,
+                    MarkerColor = Color.Blue
                 };
                 if (method.ChartStepY.HasValue)
                     if (method.Is3D)
-                    {
                         s.Name = "h" + (result.Length - n++);
-                    }
                     else
-                    {
                         s.Name = "t" + method.ChartStepY * n++;
-                    }
 
                 if (method.MaxX.HasValue)
-                {
                     s.Points.DataBindXY(xv, array);
-                }
                 else
-                {
                     s.Points.DataBindY(array);
-                }
+
                 chart1.Series.Add(s);
             }
 
-            var ca = chart1.ChartAreas[0];
+            ChartArea ca = chart1.ChartAreas[0];
             if (method.MaxX.HasValue)
             {
                 ca.AxisX.Minimum = 0;
@@ -396,6 +396,7 @@ namespace MM
                         ca.AxisX.Minimum =
                             ca.AxisX.Maximum = double.NaN;
             }
+
             chart1.ResetAutoValues();
             chart1.Series.ResumeUpdates();
             richTextBox1.Text = method.AsString(result.Reverse().ToArray());
@@ -406,8 +407,8 @@ namespace MM
         {
             comboBox2.SelectedIndexChanged -= comboBox2_SelectedIndexChanged;
 
-            var sel = (string)comboBox1.SelectedItem;
-            _methodMap[sel].SwitchItem = (string)comboBox2.SelectedItem;
+            var sel = (string) comboBox1.SelectedItem;
+            _methodMap[sel].SwitchItem = (string) comboBox2.SelectedItem;
             DoRedraw();
             comboBox2.SelectedIndexChanged += comboBox2_SelectedIndexChanged;
         }
@@ -415,17 +416,16 @@ namespace MM
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             if (sender is CheckBox cb)
-            {
                 chart1.ChartAreas[0].Area3DStyle.Enable3D = cb.Checked;
-            }
         }
 
-        private void richTextBox1_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void richTextBox1_MouseDoubleClick(object sender,
+            MouseEventArgs e)
         {
-            _preview = new Form { Name = "Preview", Size = Size };
+            _preview = new Form {Name = "Preview", Size = Size};
             var p = new RichTextBox
             {
-                Font = new Font(this.Font.Name, 15F),
+                Font = new Font(Font.Name, 15F),
                 Dock = DockStyle.Fill,
                 Text = result2d != default
                     ? GetTextFor2D(_currentMethod, result2d)

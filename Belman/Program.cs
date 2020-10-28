@@ -4,50 +4,40 @@ using MaxRev.Extensions.Matrix;
 
 namespace Belman
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Belman.CreateContext().Solve();
         }
     }
 
-    class Belman
-    { 
-        private static double M = 1000;
+    internal class Belman
+    {
+        private static readonly double M = 1000;
 
-        double[,] Minimization(double[,] C)
+        private double[,] Minimization(double[,] C)
         {
             var n = C.GetLength(0);
             var Cf = new double[n, n];
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < n; j++)
+            for (var i = 0; i < n; i++)
+            for (var j = 0; j < n; j++)
+                if (i != j)
                 {
-                    if (i != j)
+                    var mins = M;
+                    for (var k = 0; k < n; k++)
                     {
-                        var mins = M;
-                        for (int k = 0; k < n; k++)
-                        {
-                            var mm = C[i, k] + C[k, j];
-                            if (Math.Abs(mm - 1) < 0.001)
-                            { 
-                                break;
-                            }
+                        var mm = C[i, k] + C[k, j];
+                        if (Math.Abs(mm - 1) < 0.001) break;
 
-                            if (mm < mins)
-                            {
-                                mins = mm;
-                            }
-                            Cf[i, j] = mins;
-                        }
-                    }
-                    else
-                    {
-                        Cf[i, j] = 0;
+                        if (mm < mins) mins = mm;
+                        Cf[i, j] = mins;
                     }
                 }
-            }
+                else
+                {
+                    Cf[i, j] = 0;
+                }
 
             return Cf;
         }
@@ -65,10 +55,11 @@ namespace Belman
             };
             m.Print();
             var shortestPath = FindShortestPath(m, 0, 1);
-            Console.WriteLine($@"Shortest path: {string.Join(",", shortestPath)}");
+            Console.WriteLine(
+                $@"Shortest path: {string.Join(",", shortestPath)}");
         }
 
-        private int[] FindShortestPath(double[,] matrix, int @from, int to)
+        private int[] FindShortestPath(double[,] matrix, int from, int to)
         {
             var current = matrix;
             while (true)
@@ -89,38 +80,31 @@ namespace Belman
 
         private bool MatrixEquals(double[,] m1, double[,] m2)
         {
-            for (int i = 0; i < m1.GetLength(0); i++)
-            {
-                for (int j = 0; j < m1.GetLength(1); j++)
-                {
-                    if (Math.Abs(m1[i, j] - m2[i, j]) > 0.001)
-                        return false;
-                }
-            }
+            for (var i = 0; i < m1.GetLength(0); i++)
+            for (var j = 0; j < m1.GetLength(1); j++)
+                if (Math.Abs(m1[i, j] - m2[i, j]) > 0.001)
+                    return false;
 
             return true;
         }
 
-        private int[] Path(double[,] matrix, double[,] c, int @from, int to)
+        private int[] Path(double[,] matrix, double[,] c, int from, int to)
         {
             var num = new List<int>();
             var result = new List<int>();
-            for (int i = 0; i < c.GetLength(0); i++)
-            {
-                num.Add(i);
-            }
+            for (var i = 0; i < c.GetLength(0); i++) num.Add(i);
 
             num.Remove(from);
             result.Add(from + 1);
             var k = 1;
-            for (int i = 0; i < c.GetLength(0); i++)
+            for (var i = 0; i < c.GetLength(0); i++)
             {
-                if (@from == to) continue;
+                if (from == to) continue;
 
                 var mins = M;
                 foreach (var j in num)
                 {
-                    var mm = matrix[@from, j] + c[j, to];
+                    var mm = matrix[from, j] + c[j, to];
                     if (Math.Abs(mm - 1) < 0.0001) // mm==1
                     {
                         k = j;
@@ -131,12 +115,13 @@ namespace Belman
                         continue;
                     k = j;
                     mins = mm;
-
                 }
+
                 result.Add(k + 1);
                 num.Remove(k);
-                @from = k;
+                from = k;
             }
+
             return result.ToArray();
         }
 

@@ -7,12 +7,6 @@ namespace MM.S5
 {
     internal class S5M2_MassHeatTrasferUndergr : BaseMethod
     {
-        public override int Priority => 2;
-        [ReflectedUICoefs(P = 3)]
-        public double
-            Dt = 0.04,
-            gamma = 0.065;
-
         [ReflectedUICoefs]
         public static int
             k = 7,
@@ -34,14 +28,12 @@ namespace MM.S5
             T1 = 20 * k,
             T2 = 8 + k;
 
+        [ReflectedUICoefs(P = 3)]
+        public double
+            Dt = 0.04,
+            gamma = 0.065;
 
-        #region Helpers
-
-        public override double? ChartStepY => tau;
-        public override double ChartStepX => h;
-        public override double? MaxX => l;
-
-        #endregion
+        public override int Priority => 2;
 
         private double GetFilteringSpeed()
         {
@@ -51,11 +43,12 @@ namespace MM.S5
         [ReflectedTarget]
         public double[][] GetHeatTransfer()
         {
-            var b = (int)(l / h); // interm points
+            var b = (int) (l / h); // interm points
             double[]
                 alfa = new double[b + 1],
                 beta = new double[b + 1];
-            var u = new double[times + 1][].Select(x => new double[b + 1]).ToArray();
+            var u = new double[times + 1][].Select(x => new double[b + 1])
+                .ToArray();
 
             var V = GetFilteringSpeed();
             var Cp = Cp_ * Math.Pow(10, 6);
@@ -78,7 +71,7 @@ namespace MM.S5
             var b_const = M / h_2;
             var c_const = a_const + b_const + nt_tau;
 
-            for (int tl = 1; tl <= times; tl++) // time layers
+            for (var tl = 1; tl <= times; tl++) // time layers
             {
                 u[tl][0] = t0t(tl * tau);
                 u[tl][b] = tlt(tl * tau);
@@ -92,10 +85,9 @@ namespace MM.S5
                     beta[i] = (a_const * beta[i - 1] + f1) /
                               (c_const - alfa[i - 1] * a_const);
                 }
-                for (int j = b - 1; j > 0; j--)
-                {
+
+                for (var j = b - 1; j > 0; j--)
                     u[tl][j] = alfa[j] * u[tl][j + 1] + beta[j];
-                }
             }
 
             return u.ToArray();
@@ -112,7 +104,7 @@ namespace MM.S5
 
             var h_2 = Math.Pow(h, 2);
             var r = -V / D;
-            var M = 1f / (1 + (h * V) / (2 * D));
+            var M = 1f / (1 + h * V / (2 * D));
 
             var a_const = M / h_2 - r / h;
             var b_const = M / h_2;
@@ -122,20 +114,18 @@ namespace MM.S5
             var f2_1 = gamma * Cx / D;
             var fk = sigma / (D * tau);
 
-            var b = (int)(l / h); // interm points
+            var b = (int) (l / h); // interm points
             double[]
                 alfa = new double[b + 1],
                 beta = new double[b + 1];
-            var u = new double[times + 1][].Select(x => new double[b + 1]).ToArray();
+            var u = new double[times + 1][].Select(x => new double[b + 1])
+                .ToArray();
 
-            for (var i = 1; i <= b; i++)
-            {
-                u[0][i] = cx0(i);
-            }
+            for (var i = 1; i <= b; i++) u[0][i] = cx0(i);
 
             var hC = GetHeatTransfer();
 
-            for (int tl = 1; tl <= times; tl++) // time layers
+            for (var tl = 1; tl <= times; tl++) // time layers
             {
                 u[tl][0] = c0t(tl * tau);
                 u[tl][b] = clt(tl * tau);
@@ -145,19 +135,28 @@ namespace MM.S5
                 {
                     alfa[i] = b_const / (c_const - alfa[i - 1] * a_const);
 
-                    var F1 = Dt * (hC[tl][i - 1] - 2 * hC[tl][i] + hC[tl][i + 1]) / (D * h_2);
-                    var f2 = f2_1 + F1 + (fk * u[tl - 1][i]);
+                    var F1 = Dt *
+                             (hC[tl][i - 1] - 2 * hC[tl][i] + hC[tl][i + 1]) /
+                             (D * h_2);
+                    var f2 = f2_1 + F1 + fk * u[tl - 1][i];
                     beta[i] = (a_const * beta[i - 1] + f2) /
-                                  (c_const - alfa[i - 1] * a_const);
+                              (c_const - alfa[i - 1] * a_const);
                 }
-                for (int j = b - 1; j > 0; j--)
-                {
+
+                for (var j = b - 1; j > 0; j--)
                     u[tl][j] = alfa[j] * u[tl][j + 1] + beta[j];
-                }
             }
 
             return u.ToArray();
         }
 
+
+        #region Helpers
+
+        public override double? ChartStepY => tau;
+        public override double ChartStepX => h;
+        public override double? MaxX => l;
+
+        #endregion
     }
 }
