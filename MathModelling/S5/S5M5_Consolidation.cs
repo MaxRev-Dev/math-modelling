@@ -110,9 +110,9 @@ namespace MM.S5
             var a_const = M / h_2 - r / h;
             var b_const = M / h_2;
             var c_const = 2 * M / h_2 - r / h + gm / D + sigma / (D * tau);
-            var fk = sigma / (D * tau);
             var b = (int) (L / h); // interm points
             var fp = gm * Cx / D;
+            var fk = sigma / (D * tau);
             double[]
                 alfa = new double[b + 1],
                 beta = new double[b + 1];

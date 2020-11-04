@@ -6,7 +6,7 @@ using F = System.Func<double, double>;
 
 namespace MM.S5
 {
-    internal class S5M4_2DMassHeatTrasferUndergr : BaseMethod
+    internal class S5M4_2DMassHeatTransferUndergr : BaseMethod
     {
         [ReflectedUICoefs]
         public static double

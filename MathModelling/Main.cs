@@ -194,7 +194,7 @@ namespace MM
             var val = fieldInfo.Name.Trim('_');
             trackBarCurLab.Text = val;
             trackBar1.Minimum = 1;
-            trackBar1.Maximum = 200;
+            trackBar1.Maximum = 500;
             trackBar1.Value =
                 (int) Convert.ChangeType(fieldInfo.GetValue(method),
                     TypeCode.Int32);

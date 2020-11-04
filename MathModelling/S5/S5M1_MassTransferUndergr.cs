@@ -4,7 +4,7 @@ using MM.Abstractions;
 
 namespace MM.S5
 {
-    internal class S5M1_MassTrasferUndergr : BaseMethod
+    internal class S5M1_MassTransferUndergr : BaseMethod
     {
         [ReflectedUICoefs]
         public static double
