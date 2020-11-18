@@ -16,6 +16,7 @@ namespace MM.Abstractions
         }
 
         public virtual int Priority { get; } = 0;
+        public virtual int Precision { get; } = 4;
         public virtual string[] YLegend { get; }
         public virtual double ChartStepX { get; } = 1;
         public virtual double? ChartStepY { get; } = 1;
@@ -42,7 +43,7 @@ namespace MM.Abstractions
             var s = new StringBuilder();
             foreach (var t in result.Reverse())
             {
-                foreach (var v in t) s.Append(v.ToString("f4", ci).PadLeft(11));
+                foreach (var v in t) s.Append(v.ToString($"f{Precision}", ci).PadLeft(11));
 
                 s.AppendLine();
             }
