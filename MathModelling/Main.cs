@@ -35,7 +35,7 @@ namespace MM
             var methods = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(x => x.BaseType == typeof(BaseMethod));
             _methodMap = methods.Select(x => new
-                    {x.Name, Value = (BaseMethod) Activator.CreateInstance(x)})
+            { x.Name, Value = (BaseMethod)Activator.CreateInstance(x) })
                 .OrderByDescending(c => c.Value.Priority)
                 .ToDictionary(x => x.Name, x => x.Value);
         }
@@ -44,14 +44,14 @@ namespace MM
         {
             foreach (var method in _methodMap) MapProperties(method);
 
-            var sct = new[] {SeriesChartType.Line, SeriesChartType.Spline};
+            var sct = new[] { SeriesChartType.Line, SeriesChartType.Spline };
             comboBox3.DataSource = sct;
             comboBox3.SelectedIndex = 0;
             comboBox3.SelectedIndexChanged += ChartTypeChanged;
             comboBox1.DataSource = _methodMap.Select(x => x.Key).ToArray();
             timeLayerValues.SelectedIndexChanged +=
                 TimeLayerValues_SelectedIndexChanged;
-            redrawTimer = new Timer {Interval = 500};
+            redrawTimer = new Timer { Interval = 500 };
             redrawTimer.Tick += (s, _) =>
             {
                 if (!_requireRedraw) return;
@@ -60,7 +60,7 @@ namespace MM
                 redrawTimer.Stop();
             };
             redrawTimer.Start();
-            liveTimer = new Timer {Interval = 100};
+            liveTimer = new Timer { Interval = 100 };
             liveTimer.Tick += (s, _) =>
             {
                 if (liveCheck.Checked)
@@ -90,7 +90,7 @@ namespace MM
             if (!(sender is ComboBox s)) return;
             if (s.SelectedIndex == -1) return;
 
-            _seriesType = (SeriesChartType) s.SelectedItem;
+            _seriesType = (SeriesChartType)s.SelectedItem;
             _requireRedraw = true;
             redrawTimer.Start();
         }
@@ -116,7 +116,7 @@ namespace MM
                     field.GetCustomAttribute<ReflectedUICoefsAttribute>();
                 var prec = ruic.P;
                 var c = new FlowLayoutPanel();
-                var lb = new Label {Text = field.Name.Trim('_')};
+                var lb = new Label { Text = field.Name.Trim('_') };
                 var upDown = new NumericUpDown();
                 if (field.Name.Contains("tau")) upDown.Name = "upDowntau";
 
@@ -135,7 +135,7 @@ namespace MM
                 if (field.FieldType != typeof(int))
                 {
                     upDown.DecimalPlaces = prec;
-                    upDown.Increment = 1m / (decimal) Math.Pow(10, prec);
+                    upDown.Increment = 1m / (decimal)Math.Pow(10, prec);
                 }
                 else
                 {
@@ -196,7 +196,7 @@ namespace MM
             trackBar1.Minimum = 1;
             trackBar1.Maximum = 500;
             trackBar1.Value =
-                (int) Convert.ChangeType(fieldInfo.GetValue(method),
+                (int)Convert.ChangeType(fieldInfo.GetValue(method),
                     TypeCode.Int32);
         }
 
@@ -204,7 +204,7 @@ namespace MM
         {
             if (comboBox1.SelectedIndex < 0) return;
             DoRedraw();
-            var sel = (string) comboBox1.SelectedItem;
+            var sel = (string)comboBox1.SelectedItem;
             panel3.Controls.Clear();
             panel3.Controls.Add(_panelMap[sel]);
         }
@@ -214,7 +214,7 @@ namespace MM
             if (comboBox1.SelectedIndex < 0) return;
             try
             {
-                var sel = (string) comboBox1.SelectedItem;
+                var sel = (string)comboBox1.SelectedItem;
 
                 _currentFieldUI =
                     _panelMap[sel].Controls.Find("upDowntau", true)
@@ -293,7 +293,7 @@ namespace MM
         private void BindChart3D(MethodInfo[] msCalc, BaseMethod method)
         {
             if (msCalc.Any())
-                result3d = (double[][][]) msCalc
+                result3d = (double[][][])msCalc
                     .First(x => x.Name.Contains(method.SwitchItem))
                     .Invoke(method, Array.Empty<object>());
             else
@@ -341,7 +341,7 @@ namespace MM
         private void BindChart2D(MethodInfo[] msCalc, BaseMethod method)
         {
             if (msCalc.Any())
-                result2d = (double[][]) msCalc
+                result2d = (double[][])msCalc
                     .First(x => x.Name.Contains(method.SwitchItem))
                     .Invoke(method, Array.Empty<object>());
             else
@@ -364,7 +364,9 @@ namespace MM
             {
                 var s = new Series
                 {
-                    ChartType = _seriesType,
+                    ChartType = method.SeriesType.HasValue ? 
+                        (_seriesType = method.SeriesType.Value) 
+                        : _seriesType,
                     BorderWidth = 3,
                     BackImageTransparentColor = Color.WhiteSmoke,
                     MarkerColor = Color.Blue
@@ -373,7 +375,16 @@ namespace MM
                     if (method.Is3D)
                         s.Name = "h" + (result.Length - n++);
                     else
-                        s.Name = "t" + method.ChartStepY * n++;
+                    {
+                        if (method.YLegend != default)
+                        {
+                            s.Name = method.YLegend[n++];
+                        }
+                        else
+                        {
+                            s.Name = "t" + method.ChartStepY * n++;
+                        }
+                    }
 
                 if (method.MaxX.HasValue)
                     s.Points.DataBindXY(xv, array);
@@ -407,8 +418,8 @@ namespace MM
         {
             comboBox2.SelectedIndexChanged -= comboBox2_SelectedIndexChanged;
 
-            var sel = (string) comboBox1.SelectedItem;
-            _methodMap[sel].SwitchItem = (string) comboBox2.SelectedItem;
+            var sel = (string)comboBox1.SelectedItem;
+            _methodMap[sel].SwitchItem = (string)comboBox2.SelectedItem;
             DoRedraw();
             comboBox2.SelectedIndexChanged += comboBox2_SelectedIndexChanged;
         }
@@ -422,7 +433,7 @@ namespace MM
         private void richTextBox1_MouseDoubleClick(object sender,
             MouseEventArgs e)
         {
-            _preview = new Form {Name = "Preview", Size = Size};
+            _preview = new Form { Name = "Preview", Size = Size };
             var p = new RichTextBox
             {
                 Font = new Font(Font.Name, 15F),

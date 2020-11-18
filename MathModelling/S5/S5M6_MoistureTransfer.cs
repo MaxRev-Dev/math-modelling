@@ -1,21 +1,15 @@
-﻿using System;
+﻿using MM.Abstractions;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using MM.Abstractions;
 
 namespace MM.S5
 {
     internal class S5M6_MoistureTransfer : BaseMethod
     {
-        [ReflectedUICoefs(P = 6)]
-        public static double
-            a = 51.2 * Math.Pow(10, -7);
-
         [ReflectedUICoefs]
         public static double
-            N = 5,
-            k = 0.001,
-            D = 0.02,
+            a = 1,
+            k = 0.1,
             H1 = 7,
             H2 = 20,
             L = 15,
@@ -23,26 +17,21 @@ namespace MM.S5
             sigma = 0.5,
             h = 1.5,
             g = 9.8,
-            e = 0.6,
             v = 2.8 * Math.Pow(10, -5),
             C0 = 0,
             C1 = 0,
             C2 = 10,
-            Cx = 350,
-            p = 1000,
-            lam = 0.1;
+            Cx = 10,
+            p = 1000;
 
         [ReflectedUICoefs(P = 6)]
         public static double
             gm = 0.0065,
-            Dm = Math.Pow(10, -6),
-            gmS = 2 * Math.Pow(10, 4);
+            Dm = Math.Pow(10, -6);
 
         [ReflectedUICoefs]
         public static int
             times = 4;
-
-        private (double[][] filt, double[][] mass, double[][] moist)? _result;
 
         public override int Priority => 6;
 
@@ -50,7 +39,7 @@ namespace MM.S5
         public override double? ChartStepY => tau;
         public override double? MaxX => L;
 
-        private void CalculateCore()
+        private (double[][] filt, double[][] mass, double[][] moist) CalculateCore()
         {
 
             var b = (int)(L / h); // interm points 
@@ -87,19 +76,19 @@ namespace MM.S5
                     var rm = (-filtK[i] - Math.Abs(filtK[i])) / 2;
                     var r = rp + rm;
                     var n = 1f / (1 + h * Math.Abs(r) / 2);
-                     
+
                     var a_const = n / h_2 - rm / h;
-                    var b_const = n / h_2 - rp / h;
+                    var b_const = n / h_2 + rp / h;
                     var c_const = a_const + b_const + gm + sigma / tau;
-                     
+
                     alfa[i] = b_const / (c_const - alfa[i - 1] * a_const);
 
-                    var f = fp + fk;
-                    beta[i] = (a_const * beta[i - 1] + f * massPrev[i]) /
+                    var f = fp + fk * massPrev[i];
+                    beta[i] = (a_const * beta[i - 1] + f) /
                               (c_const - alfa[i - 1] * a_const);
                 }
 
-                for (var j = b - 1; j > 0; j--)
+                for (var j = b - 1; j >= 0; j--)
                     mass[j] = alfa[j] * mass[j + 1] + beta[j];
                 return mass;
             }
@@ -128,15 +117,15 @@ namespace MM.S5
                     var hk = moistK;
                     var hp = hk[i - 1];
                     var hn = hk[i + 1];
-                    var M = a * p * gm * (1 - 2 * h / (hn - hp));
+                    var M = a * p * g * (1 - 2 * h / (hn - hp));
                     var a_const = k / h_2;
                     var b_const = a_const;
                     var c_const = M / tau + 2 * k / h_2;
 
-                    alfa[i] = b_const / (c_const - alfa[i - 1] * a_const);
+                    alfa[i] = b_const / (M - alfa[i - 1] * a_const);
 
-                    var f = M / tau * hk[i] - v * (massK[i - 1] - 2 * massK[i] + massK[i + 1]) / h_2;
-                    beta[i] = (a_const * beta[i - 1] + f * moistK[i]) /
+                    var f = M * hk[i] / tau - (massK[i + 1] - 2 * massK[i] + massK[i - 1]) / h_2;
+                    beta[i] = (a_const * beta[i - 1] + f) /
                               (c_const - alfa[i - 1] * a_const);
                 }
 
@@ -151,7 +140,7 @@ namespace MM.S5
 
                 for (var i = 1; i < b; i++)
                 {
-                    filt[i] = -k * (moist[i + 1] - moist[i - 1]) / 2 * h +
+                    filt[i] = -k * (moist[i + 1] - moist[i - 1]) / (2 * h) +
                               v * (mass[i + 1] - 2 * mass[i] + mass[i - 1]) / h_2;
                 }
 
@@ -170,42 +159,28 @@ namespace MM.S5
                 var filtK = filtration(moisLocal, massLocal);
                 f1list.Add(filtK);
                 m1list.Add(massLocal = massTransfer(tl, massLocal, filtK));
-                m2list.Add(moisLocal = moistureTransfer(tl, moisLocal, filtK));
+                m2list.Add(moisLocal = moistureTransfer(tl, moisLocal, massLocal));
             }
 
-            _result = (f1list.ToArray(), m1list.ToArray(), m2list.ToArray());
+            return (f1list.ToArray(), m1list.ToArray(), m2list.ToArray());
         }
 
         [ReflectedTarget]
         public double[][] GetMoistureTransfer()
         {
-            if (!_result.HasValue)
-            {
-                CalculateCore();
-            }
-
-            return _result!.Value.moist;
+            return CalculateCore().moist;
         }
 
         [ReflectedTarget]
         public double[][] GetMassTransfer()
         {
-            if (!_result.HasValue)
-            {
-                CalculateCore();
-            }
-
-            return _result!.Value.mass;
+            return CalculateCore().mass;
         }
+
         [ReflectedTarget]
         public double[][] GetFiltration()
         {
-            if (!_result.HasValue)
-            {
-                CalculateCore();
-            }
-
-            return _result!.Value.filt;
+            return CalculateCore().filt;
         }
     }
 }
