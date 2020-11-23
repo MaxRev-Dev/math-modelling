@@ -428,7 +428,7 @@ namespace MM
 
             chart1.ResetAutoValues();
             chart1.Series.ResumeUpdates();
-            richTextBox1.Text = method.AsString(result.Reverse().ToArray());
+            richTextBox1.Text = GetInfo(_currentMethod,method.AsString(result.Reverse().ToArray())).ToString();
             comboBox2.SelectedIndexChanged += comboBox2_SelectedIndexChanged;
         }
 
@@ -452,16 +452,31 @@ namespace MM
             MouseEventArgs e)
         {
             _preview = new Form { Name = "Preview", Size = Size };
+            var textTable = result2d != default
+                ? GetTextFor2D(_currentMethod, result2d)
+                : GetTextFor3D(_currentMethod, result3d);
+            var info = GetInfo(_currentMethod, textTable);
+
             var p = new RichTextBox
             {
                 Font = new Font(Font.Name, 15F),
                 Dock = DockStyle.Fill,
-                Text = result2d != default
-                    ? GetTextFor2D(_currentMethod, result2d)
-                    : GetTextFor3D(_currentMethod, result3d)
+                Text = info.ToString()
             };
             _preview.Controls.Add(p);
             _preview.Show(this);
+        }
+
+        private StringBuilder GetInfo(BaseMethod currentMethod, string textTable)
+        {
+            var info = _currentMethod.Info;
+            if (info.Length > 0)
+            {
+                info.Insert(0, "----- info -----\n");
+                info.AppendLine("--- !!! info !!! ---");
+            }
+            info.AppendLine(textTable);
+            return info;
         }
 
         private string GetTextFor2D(BaseMethod method, double[][] result)

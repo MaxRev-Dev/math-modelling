@@ -74,6 +74,7 @@
     <Compile Include="S5\S5M6_MoistureTransfer.cs" />
     <Compile Include="S5\S5M7_TDS.cs" />
     <Compile Include="S5\S5M8_TDS.cs" />
+    <Compile Include="S5\S5M9_TDS.cs" />
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
     </EmbeddedResource>

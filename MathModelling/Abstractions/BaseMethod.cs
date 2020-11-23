@@ -25,9 +25,10 @@ namespace MM.Abstractions
         public virtual string SwitchItem { get; set; }
         public virtual string[] SwitchData { get; set; }
         public virtual bool Is3D => false;
+        public virtual StringBuilder Info { get; } = new StringBuilder();
 
         public virtual SeriesChartType? SeriesType { get; } = default;
-        public virtual bool SwapAxis { get;  } = false;
+        public virtual bool SwapAxis { get; } = false;
 
         public virtual double[][] Calculate()
         {
