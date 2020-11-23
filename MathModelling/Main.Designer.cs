@@ -29,9 +29,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.panel1 = new System.Windows.Forms.Panel();
             this.comboBox3 = new System.Windows.Forms.ComboBox();
@@ -46,13 +46,14 @@
             this.label1 = new System.Windows.Forms.Label();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.is3dcheck = new System.Windows.Forms.CheckBox();
             this.trackBox = new System.Windows.Forms.GroupBox();
             this.liveCheck = new System.Windows.Forms.CheckBox();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.trackBarCurLab = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.panel1.SuspendLayout();
             this.timeLayerBox.SuspendLayout();
@@ -61,6 +62,7 @@
             this.trackBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panel4.SuspendLayout();
+            this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // chart1
@@ -68,21 +70,21 @@
             this.chart1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            chartArea1.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
-            chartArea1.BackColor = System.Drawing.Color.Gainsboro;
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
+            chartArea2.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
+            chartArea2.BackColor = System.Drawing.Color.Gainsboro;
+            chartArea2.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.chart1.Legends.Add(legend2);
             this.chart1.Location = new System.Drawing.Point(3, 3);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel;
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
-            series1.Legend = "Legend1";
-            series1.MarkerColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            series1.Name = "Series1";
-            this.chart1.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series2.Legend = "Legend1";
+            series2.MarkerColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            series2.Name = "Series1";
+            this.chart1.Series.Add(series2);
             this.chart1.Size = new System.Drawing.Size(778, 561);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
@@ -210,8 +212,7 @@
             // panel2
             // 
             this.panel2.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.panel2.Controls.Add(this.checkBox1);
-            this.panel2.Controls.Add(this.trackBox);
+            this.panel2.Controls.Add(this.flowLayoutPanel1);
             this.panel2.Controls.Add(this.panel1);
             this.panel2.Controls.Add(this.richTextBox1);
             this.panel2.Location = new System.Drawing.Point(12, 585);
@@ -219,23 +220,23 @@
             this.panel2.Size = new System.Drawing.Size(1029, 200);
             this.panel2.TabIndex = 3;
             // 
-            // checkBox1
+            // is3dcheck
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(275, 35);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(40, 17);
-            this.checkBox1.TabIndex = 4;
-            this.checkBox1.Text = "3D";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.is3dcheck.AutoSize = true;
+            this.is3dcheck.Location = new System.Drawing.Point(242, 3);
+            this.is3dcheck.Name = "is3dcheck";
+            this.is3dcheck.Size = new System.Drawing.Size(51, 17);
+            this.is3dcheck.TabIndex = 4;
+            this.is3dcheck.Text = "Is 3D";
+            this.is3dcheck.UseVisualStyleBackColor = true;
+            this.is3dcheck.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // trackBox
             // 
             this.trackBox.Controls.Add(this.liveCheck);
             this.trackBox.Controls.Add(this.trackBar1);
             this.trackBox.Controls.Add(this.trackBarCurLab);
-            this.trackBox.Location = new System.Drawing.Point(19, 4);
+            this.trackBox.Location = new System.Drawing.Point(3, 3);
             this.trackBox.Name = "trackBox";
             this.trackBox.Size = new System.Drawing.Size(233, 67);
             this.trackBox.TabIndex = 3;
@@ -265,9 +266,9 @@
             this.trackBarCurLab.AutoSize = true;
             this.trackBarCurLab.Location = new System.Drawing.Point(22, 20);
             this.trackBarCurLab.Name = "trackBarCurLab";
-            this.trackBarCurLab.Size = new System.Drawing.Size(35, 13);
+            this.trackBarCurLab.Size = new System.Drawing.Size(26, 13);
             this.trackBarCurLab.TabIndex = 0;
-            this.trackBarCurLab.Text = "label3";
+            this.trackBarCurLab.Text = "Tau";
             // 
             // panel3
             // 
@@ -290,6 +291,15 @@
             this.panel4.Size = new System.Drawing.Size(1026, 567);
             this.panel4.TabIndex = 5;
             // 
+            // flowLayoutPanel1
+            // 
+            this.flowLayoutPanel1.Controls.Add(this.trackBox);
+            this.flowLayoutPanel1.Controls.Add(this.is3dcheck);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(19, 10);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(299, 64);
+            this.flowLayoutPanel1.TabIndex = 5;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -308,11 +318,12 @@
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
             this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
             this.trackBox.ResumeLayout(false);
             this.trackBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.panel4.ResumeLayout(false);
+            this.flowLayoutPanel1.ResumeLayout(false);
+            this.flowLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -336,10 +347,11 @@
         private System.Windows.Forms.CheckBox liveCheck;
         private System.Windows.Forms.ComboBox comboBox3;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox is3dcheck;
         private System.Windows.Forms.Panel timeLayerBox;
         private System.Windows.Forms.ComboBox timeLayerValues;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
     }
 }
 

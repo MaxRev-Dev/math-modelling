@@ -11,14 +11,15 @@ namespace MM.S5
         public override int Precision => 6;
 
         public override double ChartStepX => .1;
+         
+        public override bool SwapAxis => true;
 
         public override string[] YLegend
             => new[]
             {
                 "Soil",
                 "Half-point"
-            };
-        public override double? MaxX => L;
+            }; 
 
         [ReflectedUICoefs(P = 6)]
         public static double
@@ -31,18 +32,12 @@ namespace MM.S5
         public static double
             l1 = 0.5,
             L = 1,
-            h = 0.1;
-            //g = 9.8,
-            //v1 = 0.35,
-            //v2 = 0.35,
-            //psdewy = 1950,
-            //psdry = 1650,
-            //pp = 1000;
+            h = 0.1; 
 
         private (double[][] tension, double[][] deform) _effector;
 
         [ReflectedTarget]
-        public double[][] GetTDS()
+        public double[][] GetTransfer()
         {
             var tensions = new List<double[]>();
             var deforms = new List<double[]>();
@@ -76,7 +71,7 @@ namespace MM.S5
             var b = (int)(L / h);
             double[] soilx = new double[b + 1],
                 tension = new double[b + 1],
-                deform = new double[b + 1]; 
+                deform = new double[b + 1];
             for (int i = 0; i <= b; i++)
             {
                 var x = i * h;
@@ -86,28 +81,25 @@ namespace MM.S5
                 tension[i] = cx ? Tension1(a, x) : Tension2(a, x);
                 deform[i] = cx ? Deform1(a, x) : Deform2(a, x);
             }
-            tensions.Add(tension);
-            deforms.Add(deform);
-            tensions.Add(Enumerable.Range(0, b + 1).Select(x =>Tension1( a1,l1)).ToArray());
-            deforms.Add(Enumerable.Range(0, b + 1).Select(x => Deform1(a1, l1)).ToArray());
 
+            tensions.Add(tension);
+            deforms.Add(deform); 
 
             _effector = (tensions.ToArray(), deforms.ToArray());
             return new[] { soilx }.ToArray();
         }
 
-
         [ReflectedTarget]
         public double[][] GetTension()
         {
-            GetTDS();
+            GetTransfer();
             return _effector.tension;
         }
 
         [ReflectedTarget]
         public double[][] GetDeform()
         {
-            GetTDS();
+            GetTransfer();
             return _effector.deform;
         }
     }

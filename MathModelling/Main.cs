@@ -170,7 +170,8 @@ namespace MM
                         // ignored
                     }
                 };
-                if (lb.Text.Equals("tau")) _currentFieldUI = upDown;
+                if (lb.Text.Equals("tau"))
+                    _currentFieldUI = upDown;
             }
 
             trackBar1.ValueChanged += OnTrackChange;
@@ -233,7 +234,7 @@ namespace MM
         private void MethodAction(BaseMethod method)
         {
             comboBox2.SelectedIndexChanged -= comboBox2_SelectedIndexChanged;
-
+            is3dcheck.Visible =
             timeLayerBox.Visible = method.Is3D;
             _currentMethod = method;
             Type t = method.GetType();
@@ -245,7 +246,13 @@ namespace MM
                                     .Any()) ??
                             fds.FirstOrDefault(x => x.Name.Contains("tau"));
             if (_currentField != default)
+            {
                 SelectForChange(_currentField, _currentMethod);
+            }
+
+            trackBox.Visible = _currentField != default &&
+                               _currentField.Name.Contains("tau");
+
 
             var msCalc = method.GetType().GetMethods()
                 .Where(x =>
@@ -259,6 +266,7 @@ namespace MM
                     .ToArray();
                 method.SwitchData = ms;
                 method.SwitchItem = ms[0];
+                comboBox2.DataSource = method.SwitchData;
             }
 
             if (method.SwitchData != default)
@@ -364,8 +372,8 @@ namespace MM
             {
                 var s = new Series
                 {
-                    ChartType = method.SeriesType.HasValue ? 
-                        (_seriesType = method.SeriesType.Value) 
+                    ChartType = method.SeriesType.HasValue ?
+                        (_seriesType = method.SeriesType.Value)
                         : _seriesType,
                     BorderWidth = 3,
                     BackImageTransparentColor = Color.WhiteSmoke,
@@ -387,9 +395,19 @@ namespace MM
                     }
 
                 if (method.MaxX.HasValue)
-                    s.Points.DataBindXY(xv, array);
+                {
+                    if (method.SwapAxis)
+                        s.Points.DataBindXY(array, xv);
+                    else
+                        s.Points.DataBindXY(xv, array);
+                }
                 else
-                    s.Points.DataBindY(array);
+                {
+                    if (method.SwapAxis)
+                        s.Points.DataBindXY(array, xv);
+                    else
+                        s.Points.DataBindY(array);
+                }
 
                 chart1.Series.Add(s);
             }

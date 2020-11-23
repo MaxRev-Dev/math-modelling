@@ -27,6 +27,7 @@ namespace MM.Abstractions
         public virtual bool Is3D => false;
 
         public virtual SeriesChartType? SeriesType { get; } = default;
+        public virtual bool SwapAxis { get;  } = false;
 
         public virtual double[][] Calculate()
         {
