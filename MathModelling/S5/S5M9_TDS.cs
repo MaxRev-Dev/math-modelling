@@ -1,8 +1,7 @@
-﻿using System;
+﻿using MM.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using MM.Abstractions;
 
 namespace MM.S5
 {
@@ -16,7 +15,7 @@ namespace MM.S5
 
         public override double ChartStepX => h;
 
-        public override bool SwapAxis => false; 
+        public override bool SwapAxis => false;
 
         [ReflectedUICoefs]
         public static double
@@ -26,7 +25,9 @@ namespace MM.S5
             gm = 1,
             x0 = 2.82,
             xi = 2.8,
-            h = 1;
+            h = 1,
+            ci_exact = 0.416,
+            ci_approx = 0.39;
 
         public void CalculateCore()
         {
@@ -71,12 +72,10 @@ namespace MM.S5
             var rand = Enumerable.Range(0, b)
                 .Select(_ => _rand.NextDouble() * 10)
                 .Concat(new[] { L / 2f }).ToArray();
-             
-            var ci1 = 0.416;
-            var ci2 = 0.39; 
+
             Info.Clear();
-            Info.AppendLine($"Exact: { GetValue(ci1)}");
-            Info.AppendLine($"Approx: { GetValue(ci2)}");
+            Info.AppendLine($"Exact: { GetValue(ci_exact)}");
+            Info.AppendLine($"Approx: { GetValue(ci_approx)}");
             _effector = (new[] { task1.ToArray() },
                 rand.Select(Concentration).ToArray()
                 );

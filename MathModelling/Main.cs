@@ -271,17 +271,13 @@ namespace MM
 
             if (method.SwitchData != default)
             {
-                panel5.Visible = true;
                 if (comboBox2.DataSource == default)
                 {
                     _currentTimeLayer = 0;
-                    comboBox2.DataSource = method.SwitchData;
-                    comboBox2.SelectedItem = method.SwitchItem;
                 }
-                else
-                {
-                    comboBox2.SelectedItem = method.SwitchItem;
-                }
+                comboBox2.DataSource = method.SwitchData;
+                comboBox2.SelectedItem = method.SwitchItem;
+                panel5.Visible = true;
             }
             else
             {
@@ -428,7 +424,7 @@ namespace MM
 
             chart1.ResetAutoValues();
             chart1.Series.ResumeUpdates();
-            richTextBox1.Text = GetInfo(_currentMethod,method.AsString(result.Reverse().ToArray())).ToString();
+            richTextBox1.Text = GetInfo(_currentMethod, method.AsString(result.Reverse().ToArray())).ToString();
             comboBox2.SelectedIndexChanged += comboBox2_SelectedIndexChanged;
         }
 
