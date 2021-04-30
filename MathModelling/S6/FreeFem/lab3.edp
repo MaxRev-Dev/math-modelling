@@ -1,0 +1,27 @@
+func f = 2*x^3 - 2*x^2 + 6*x - 2;
+func u1 = x^3 - x^2;
+
+mesh Th = square(50, 50, [x, y]);
+
+fespace Vh(Th, P1);
+Vh u, v, sol=u1;
+
+solve Problem(u, v)= int2d(Th)(dx(u) * dx(v))
+- int2d(Th)(2*u * v) + int2d(Th)(f * v)
++ on(2, u = 0) 
++ on(4, u = 0);
+
+
+real[int] color =[ 
+0.02, 0.85, 0.6, 
+1./18., 0.87, 0.69,
+0.19, 0.32 , 0.95,
+0.467, 0.56, 0.64,
+0.57, 0.45, 0.6,
+0.68, 0.7, 0.5,
+0.71, 0.8, 0.3];
+
+real[int] vals(-0.18:0.01:0.1);
+
+plot(u, fill=true, value=true, wait=true, hsv=color, viso=vals);
+plot(sol, fill=true, value=true, wait=true, hsv=color, viso=vals);

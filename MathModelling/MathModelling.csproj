@@ -82,6 +82,7 @@
     <Compile Include="S5\S5M9_TDS.cs" />
     <Compile Include="S6\S6M1.cs" />
     <Compile Include="S6\S6M2.cs" />
+    <Compile Include="S6\S6M6.cs" />
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
     </EmbeddedResource>
